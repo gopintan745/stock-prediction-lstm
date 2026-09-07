@@ -1,8 +1,7 @@
-import argparse
 import optuna
 import torch
 from data.pipeline import FEATURE_COLUMNS, load_dataset
-from training.loop import create_dataloaders, train_model, select_optimizer
+from training.loop import create_dataloaders, train_model, select_optimizer, set_seed
 from models.lstm import StockLSTM
 
 
@@ -11,13 +10,13 @@ def objective(trial):
     hidden_size = trial.suggest_int('hidden_size', 32, 256)
     num_layers = trial.suggest_int('num_layers', 1, 3)
     dropout = trial.suggest_float('dropout', 0.0, 0.5)
-    learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-2)
+    learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-2, log=True)
     window = trial.suggest_categorical('window', [30, 60, 90])
     batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
     optimizer_name = trial.suggest_categorical('optimizer', ['adam', 'adamw'])
 
     # Load dataset
-    train_ds, val_ds, test_ds, _, _, _ = load_dataset("AAPL", window_size=window)
+    train_ds, val_ds, test_ds, _, _ = load_dataset("AAPL", window=window)
 
     # Create dataloaders
     train_loader, val_loader, _ = create_dataloaders(train_ds, val_ds, test_ds, batch_size=batch_size)
@@ -31,7 +30,7 @@ def objective(trial):
     optimizer = select_optimizer(model, optimizer_name=optimizer_name, learning_rate=learning_rate)
 
     # Train the model
-    _, val_loss = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50)
+    _, val_loss = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, seed=42)
     if optuna.trial.should_prune():
         raise optuna.TrialPruned()
 

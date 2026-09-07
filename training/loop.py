@@ -1,7 +1,20 @@
+import random
+import numpy as np
 import torch
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader, Dataset
+
+
+def set_seed(seed: int = 42):
+    """Set random seeds for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 class SequenceDataset(Dataset):
     def __init__(self, X, y):
@@ -20,14 +33,15 @@ def create_dataloaders(train_data, val_data, test_data, batch_size=32):
     val_dataset = SequenceDataset(val_data.X, val_data.y)
     test_dataset = SequenceDataset(test_data.X, test_data.y)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader
 
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32):
+def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42):
+    set_seed(seed)
     model.to(device)
     best_val_loss = float('inf')
     best_model_state = None

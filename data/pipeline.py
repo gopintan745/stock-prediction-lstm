@@ -74,6 +74,13 @@ def download_ohlcv(ticker: str, start: str = "2015-01-01", end: str | None = Non
     # yfinance sometimes returns MultiIndex columns for single tickers; flatten if so
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = [c[0] if c[0] != "" else c[1] for c in df.columns]
+    # Ensure date column is named "Date"
+    if "Date" not in df.columns:
+        # yfinance uses "Datetime" for intraday, "Date" for daily
+        for col in ["Datetime", "date", "datetime"]:
+            if col in df.columns:
+                df = df.rename(columns={col: "Date"})
+                break
     return df
 
 
@@ -111,8 +118,8 @@ def load_dataset(
     train_frac: float = 0.70,
     val_frac: float = 0.15,
 ):
-    """Full pipeline: download -> engineer features -> chronological split ->
-    scale (fit on train only) -> window into sequences.
+    """Full pipeline: download -> engineer features -> scale (fit on train only) ->
+    window into sequences -> chronological split on sequences.
 
     Returns: train, val, test (each a SplitData), and the fitted scalers.
     """
@@ -123,6 +130,8 @@ def load_dataset(
     n_train = int(n * train_frac)
     n_val = int(n * val_frac)
 
+    # Split raw dataframe chronologically FIRST (before windowing)
+    # This ensures no data leakage between splits
     train_df = df.iloc[:n_train]
     val_df = df.iloc[n_train:n_train + n_val]
     test_df = df.iloc[n_train + n_val:]
