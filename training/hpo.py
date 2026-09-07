@@ -12,7 +12,7 @@ def objective(trial, device='cpu', num_epochs=50):
     num_layers = trial.suggest_int('num_layers', 1, 3)
     dropout = trial.suggest_float('dropout', 0.0, 0.5)
     learning_rate = trial.suggest_float('learning_rate', 1e-5, 1e-2, log=True)
-    window = trial.suggest_categorical('window', [30, 60, 90])
+    window = trial.suggest_categorical('window', [20, 30, 40])
     batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
     optimizer_name = trial.suggest_categorical('optimizer', ['adam', 'adamw'])
 
