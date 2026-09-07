@@ -41,9 +41,10 @@ def run_optuna_study(n_trials=50):
     study = optuna.create_study(direction='minimize', 
                                 study_name='lstm_hyperparameter_optimization',
                                 storage='sqlite:///optuna_study.db', 
-                                load_if_exists=True, pruner=optuna.pruners.MedianPruner(),
-                                sampler=optuna.samplers.TPESampler())
-    study.optimize(objective, n_trials=n_trials)
+                                load_if_exists=True, 
+                                pruner=optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=10, interval_steps=5),
+                                sampler=optuna.samplers.TPESampler(seed=42))
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
 
     print("Best trial:")
     trial = study.best_trial
