@@ -15,7 +15,7 @@ def final_training(ticker="AAPL", num_epochs=100, device='cpu'):
 
     study = optuna.load_study(
         study_name='lstm_hyperparameter_optimization',
-        storage='sqlite:///optuna_study.db'
+        storage='sqlite:////kaggle/working/stock-prediction-lstm/optuna_study.db'
     ) 
     # Load dataset with a fixed window size for final training
     window_size = study.best_params['window'] # You can choose the best window size based on previous HPO results
