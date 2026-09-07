@@ -1,0 +1,83 @@
+import torch
+from torch import nn
+from torch import optim
+from torch.utils.data import DataLoader, Dataset
+
+class SequenceDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = torch.tensor(X, dtype=torch.float32)
+        self.y = torch.tensor(y, dtype=torch.float32)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+
+
+def create_dataloaders(train_data, val_data, test_data, batch_size=32):
+    train_dataset = SequenceDataset(train_data.X, train_data.y)
+    val_dataset = SequenceDataset(val_data.X, val_data.y)
+    test_dataset = SequenceDataset(test_data.X, test_data.y)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, test_loader
+
+
+def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32):
+    model.to(device)
+    best_val_loss = float('inf')
+    best_model_state = None
+
+    for epoch in range(num_epochs):
+        model.train()
+        train_loss = 0.0
+        for X_batch, y_batch in train_loader:
+            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(X_batch)
+            loss = criterion(outputs, y_batch)
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item() * X_batch.size(0)
+
+        train_loss /= len(train_loader.dataset)
+
+        # Validation
+        model.eval()
+        val_loss = 0.0
+        with torch.no_grad():
+            for X_batch, y_batch in val_loader:
+                X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+                outputs = model(X_batch)
+                loss = criterion(outputs, y_batch)
+                val_loss += loss.item() * X_batch.size(0)
+
+        val_loss /= len(val_loader.dataset)
+
+        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}')
+
+        # Save the best model
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_model_state = model.state_dict()
+
+    # Load the best model state
+    if best_model_state is not None:
+        model.load_state_dict(best_model_state)
+
+    return model, best_val_loss
+
+
+def select_optimizer(model, optimizer_name='adam', learning_rate=0.001):
+    if optimizer_name.lower() == 'adam':
+        return optim.Adam(model.parameters(), lr=learning_rate)
+    elif optimizer_name.lower() == 'adamw':
+        return optim.AdamW(model.parameters(), lr=learning_rate)
+    else:
+        raise ValueError(f"Unsupported optimizer: {optimizer_name}")
