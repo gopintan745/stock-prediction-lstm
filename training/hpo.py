@@ -31,12 +31,12 @@ def objective(trial, device='cpu', num_epochs=50):
     optimizer = select_optimizer(model, optimizer_name=optimizer_name, learning_rate=learning_rate)
 
     # Train the model
-    _, val_loss = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=num_epochs, seed=42, device=device)
-    trial.report(val_loss, step=num_epochs)
+    _, ema_val_loss = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=num_epochs, seed=42, device=device)
+    trial.report(ema_val_loss, step=num_epochs)
     if trial.should_prune():
         raise optuna.TrialPruned()
 
-    return val_loss
+    return ema_val_loss
 
 
 def run_optuna_study(n_trials=50, device='cpu', num_epochs=50):

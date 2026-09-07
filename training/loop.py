@@ -40,11 +40,14 @@ def create_dataloaders(train_data, val_data, test_data, batch_size=32):
     return train_loader, val_loader, test_loader
 
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42):
+def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42, patience=10):
     set_seed(seed)
     model.to(device)
     best_val_loss = float('inf')
     best_model_state = None
+    ema_val_loss = None  # For early stopping based on EMA of validation loss
+    best_ema_val_loss = float('inf')  
+    epochs_no_improve = 0
 
     for epoch in range(num_epochs):
         model.train()
@@ -74,18 +77,29 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
 
         val_loss /= len(val_loader.dataset)
 
+        if best_ema_val_loss is None:
+            best_ema_val_loss = val_loss
+        else:
+            # Update EMA of validation loss
+            alpha = 0.1  # Smoothing factor for EMA
+            best_ema_val_loss = alpha * val_loss + (1 - alpha) * best_ema_val_loss
+
         print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}')
 
-        # Save the best model
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            best_model_state = model.state_dict()
+        if ema_val_loss < best_ema_val_loss:
+            best_ema_val_loss = ema_val_loss
+            best_model_state = {k: v.clone() for k, v in model.state_dict().items()}
+            epochs_no_improve = 0
+        else:
+            epochs_no_improve += 1
+            if epochs_no_improve >= patience:
+                break
 
     # Load the best model state
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
 
-    return model, best_val_loss
+    return model, best_ema_val_loss
 
 
 def select_optimizer(model, optimizer_name='adam', learning_rate=0.001):
