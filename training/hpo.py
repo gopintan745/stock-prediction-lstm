@@ -32,7 +32,7 @@ def objective(trial, device='cpu', num_epochs=50):
 
     # Train the model
     _, val_loss = train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=num_epochs, seed=42, device=device)
-    if optuna.trial.should_prune():
+    if trial.should_prune():
         raise optuna.TrialPruned()
 
     return val_loss
