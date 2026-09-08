@@ -43,7 +43,6 @@ def create_dataloaders(train_data, val_data, test_data, batch_size=32):
 def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42, patience=10, alpha=0.1):
     set_seed(seed)
     model.to(device)
-    best_val_loss = float('inf')
     best_model_state = None
     ema_val_loss = None  # For early stopping based on EMA of validation loss
     best_ema_val_loss = float('inf')  
@@ -62,8 +61,10 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             optimizer.step()
 
             train_loss += loss.item() * X_batch.size(0)
+            train_rmse = torch.sqrt(loss).item() * X_batch.size(0)  # Calculate RMSE (sqrt of MSE)
 
         train_loss /= len(train_loader.dataset)
+        train_rmse /= len(train_loader.dataset)
 
         # Validation
         model.eval()
@@ -87,10 +88,11 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             # Update EMA of validation RMSE
             ema_val_loss = alpha * val_rmse + (1 - alpha) * ema_val_loss  # alpha is the smoothing factor for EMA
 
-        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val RMSE: {val_rmse:.4f}')
+        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.8f}, Train RMSE: {train_rmse:.8f}, Val Loss: {val_rmse:.8f} Val RMSE: {val_rmse:.8f}')
 
-        if ema_val_loss < best_ema_val_loss:
-            best_ema_val_loss = ema_val_loss
+        min_delta = 1e-5
+        if best_ema_val_rmse - ema_val_loss > min_delta:
+            best_ema_val_rmse = ema_val_loss
             best_model_state = {k: v.clone() for k, v in model.state_dict().items()}
             epochs_no_improve = 0
         else:
