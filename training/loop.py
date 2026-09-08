@@ -45,7 +45,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
     model.to(device)
     best_model_state = None
     ema_val_loss = None  # For early stopping based on EMA of validation loss
-    best_ema_val_loss = float('inf')  
+    best_ema_val_rmse = float('inf')  
     epochs_no_improve = 0
 
     for epoch in range(num_epochs):
@@ -104,7 +104,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
 
-    return model, best_ema_val_loss
+    return model, best_ema_val_rmse  # Return the best EMA validation RMSE for early stopping
 
 
 def select_optimizer(model, optimizer_name='adam', learning_rate=0.001):
