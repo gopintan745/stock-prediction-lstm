@@ -10,12 +10,13 @@ from models.lstm import StockLSTM
 from utils.metrics import evaluate, naive_baseline_preds
 
 
-def final_training(ticker="AAPL", num_epochs=100, device='cpu'):
+def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='sqlite:///optuna_study.db'):
     set_seed(42)
 
     study = optuna.load_study(
         study_name='lstm_hyperparameter_optimization',
-        storage='sqlite:////kaggle/working/stock-prediction-lstm/optuna_study.db'
+        storage=storage_path,
+        load_if_exists=True
     ) 
     # Load dataset with a fixed window size for final training
     window_size = study.best_params['window'] # You can choose the best window size based on previous HPO results
