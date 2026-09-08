@@ -10,12 +10,12 @@ from models.lstm import StockLSTM
 from utils.metrics import evaluate, naive_baseline_preds
 
 
-def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='sqlite:///optuna_study.db'):
+def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='optuna_study.db'):
     set_seed(42)
 
     study = optuna.load_study(
         study_name='lstm_hyperparameter_optimization',
-        storage=storage_path,
+        storage=f'sqlite:///{storage_path}',
         load_if_exists=True
     ) 
     # Load dataset with a fixed window size for final training
@@ -86,7 +86,7 @@ def main():
     parser.add_argument("--ticker", type=str, default="AAPL", help="Stock ticker symbol for training.")
     parser.add_argument("--epochs", type=int, default=100, help="Number of epochs for final training.")
     parser.add_argument("--device", type=str, default='cpu', help="Device for final model training.")
-    parser.add_argument("--storage_path", type=str, default='sqlite:///optuna_study.db', help="Path to the Optuna study database.")
+    parser.add_argument("--storage_path", type=str, default='optuna_study.db', help="Path to the Optuna study database.")
     args = parser.parse_args()
 
     model, scaler_x, scaler_y = final_training(args.ticker, num_epochs=args.epochs, device=args.device)
