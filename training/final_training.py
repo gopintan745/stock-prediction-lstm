@@ -86,6 +86,7 @@ def main():
     parser.add_argument("--ticker", type=str, default="AAPL", help="Stock ticker symbol for training.")
     parser.add_argument("--epochs", type=int, default=100, help="Number of epochs for final training.")
     parser.add_argument("--device", type=str, default='cpu', help="Device for final model training.")
+    parser.add_argument("--storage_path", type=str, default='sqlite:///optuna_study.db', help="Path to the Optuna study database.")
     args = parser.parse_args()
 
     model, scaler_x, scaler_y = final_training(args.ticker, num_epochs=args.epochs, device=args.device)
