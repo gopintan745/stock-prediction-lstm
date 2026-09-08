@@ -68,22 +68,26 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
         # Validation
         model.eval()
         val_loss = 0.0
+        val_rmse = 0.0
         with torch.no_grad():
             for X_batch, y_batch in val_loader:
                 X_batch, y_batch = X_batch.to(device), y_batch.to(device)
                 outputs = model(X_batch)
                 loss = criterion(outputs, y_batch)
                 val_loss += loss.item() * X_batch.size(0)
+                # Calculate RMSE (sqrt of MSE)
+                val_rmse += torch.sqrt(loss).item() * X_batch.size(0)
 
         val_loss /= len(val_loader.dataset)
+        val_rmse /= len(val_loader.dataset)
 
         if ema_val_loss is None:
-            ema_val_loss = val_loss
+            ema_val_loss = val_rmse
         else:
-            # Update EMA of validation loss
-            ema_val_loss = alpha * val_loss + (1 - alpha) * ema_val_loss #alpha is the smoothing factor for EMA
+            # Update EMA of validation RMSE
+            ema_val_loss = alpha * val_rmse + (1 - alpha) * ema_val_loss  # alpha is the smoothing factor for EMA
 
-        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}')
+        print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val RMSE: {val_rmse:.4f}')
 
         if ema_val_loss < best_ema_val_loss:
             best_ema_val_loss = ema_val_loss
