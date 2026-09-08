@@ -40,7 +40,7 @@ def create_dataloaders(train_data, val_data, test_data, batch_size=32):
     return train_loader, val_loader, test_loader
 
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42, patience=10):
+def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=50, device='cpu', batch_size=32, seed=42, patience=10, alpha=0.1):
     set_seed(seed)
     model.to(device)
     best_val_loss = float('inf')
@@ -81,8 +81,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
             best_ema_val_loss = val_loss
         else:
             # Update EMA of validation loss
-            alpha = 0.1  # Smoothing factor for EMA
-            best_ema_val_loss = alpha * val_loss + (1 - alpha) * best_ema_val_loss
+            best_ema_val_loss = alpha * val_loss + (1 - alpha) * best_ema_val_loss #alpha is the smoothing factor for EMA
 
         print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}')
 
