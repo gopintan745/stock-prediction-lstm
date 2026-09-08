@@ -77,11 +77,11 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
 
         val_loss /= len(val_loader.dataset)
 
-        if best_ema_val_loss is None:
-            best_ema_val_loss = val_loss
+        if ema_val_loss is None:
+            ema_val_loss = val_loss
         else:
             # Update EMA of validation loss
-            best_ema_val_loss = alpha * val_loss + (1 - alpha) * best_ema_val_loss #alpha is the smoothing factor for EMA
+            ema_val_loss = alpha * val_loss + (1 - alpha) * ema_val_loss #alpha is the smoothing factor for EMA
 
         print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}')
 
