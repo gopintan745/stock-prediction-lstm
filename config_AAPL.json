@@ -1,0 +1,6 @@
+{
+  "ticker": "AAPL",
+  "epochs": 100,
+  "device": "cuda",
+  "storage_path": "/kaggle/working/stock-prediction-lstm/optuna_study.db"
+}
