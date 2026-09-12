@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from data.pipeline import FEATURE_COLUMNS, load_dataset
 from training.loop import create_dataloaders, train_model, select_optimizer, set_seed
 from models.lstm import StockLSTM
-from utils.metrics import evaluate, naive_baseline_preds
+from utils.metrics import evaluate, naive_baseline_preds, majority_class_baseline_preds
 
 
 def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='optuna_study.db'):
@@ -63,20 +63,41 @@ def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='op
     targets_t = torch.tensor(targets, dtype=torch.float32)
 
     model_metrics = evaluate(preds_t, targets_t)
-    baseline_metrics = evaluate(naive_baseline_preds(targets_t), targets_t)
+    naive_metrics = evaluate(naive_baseline_preds(targets_t), targets_t)
 
+     # Majority-class baseline: always predict the direction that was more
+    # common in the TRAINING set (never test/val, to avoid leaking test info).
+    train_targets_unscaled = torch.tensor(
+        scaler_y.inverse_transform(train_ds.y.reshape(-1, 1)).ravel(), dtype=torch.float32
+    )
+    majority_preds = majority_class_baseline_preds(train_targets_unscaled, n=len(targets_t))
+    majority_metrics = evaluate(majority_preds, targets_t)
 
-    print(f"Final validation loss after training: {final_val_loss:.4f}")
 
     print("\nModel metrics (test set, log-return space):")
     print(json.dumps(model_metrics, indent=2))
     print("\nNaive baseline metrics (predict zero return):")
-    print(json.dumps(baseline_metrics, indent=2))
-
-    # Print key comparison
-    print(f"\nModel Directional Accuracy: {model_metrics['Directional Accuracy']:.2%}")
-    print(f"Baseline Directional Accuracy: {baseline_metrics['Directional Accuracy']:.2%}")
-
+    print(json.dumps(naive_metrics, indent=2))
+    print("\nMajority-class baseline metrics (always predict train-set majority direction):")
+    print(json.dumps(majority_metrics, indent=2))
+ 
+    # Is the model's directional accuracy actually distinguishable from
+    # random guessing (p=0.5), given how many test samples we have?
+    n_test = len(targets_t)
+    n_correct = round(model_metrics["DirectionalAccuracy"] * n_test)
+    try:
+        from scipy.stats import binomtest
+        p_value = binomtest(n_correct, n_test, p=0.5, alternative="greater").pvalue
+        print(f"\nDirectional accuracy vs. random guessing (p=0.5):")
+        print(f"  {n_correct}/{n_test} correct ({model_metrics['DirectionalAccuracy']*100:.2f}%), "
+              f"one-sided binomial test p-value = {p_value:.4f}")
+        if p_value >= 0.05:
+            print("  --> NOT statistically distinguishable from random guessing at alpha=0.05.")
+        else:
+            print("  --> Statistically better than random guessing at alpha=0.05.")
+    except ImportError:
+        print("\n(scipy not available -- skipping significance test on directional accuracy)")
+ 
     return trained_model, scaler_x, scaler_y
 
 
