@@ -4,7 +4,7 @@ A PyTorch-based LSTM model for predicting next-day stock log returns using techn
 
 ## Project Structure
 
-```
+```text
 stock-prediction-lstm/
 ├── app/                    # Application layer
 │   ├── model_loader.py     # Load trained model and artifacts
@@ -59,7 +59,7 @@ pip install -r requirements.txt
 streamlit run app/streamlit_app.py
 ```
 
-Open http://localhost:8501 in your browser.
+Open `http://localhost:8501` in your browser.
 
 ### Command Line
 
@@ -103,6 +103,7 @@ historical = service.get_historical_predictions("AAPL", test_days=30)
 ## Model Details
 
 ### Architecture
+
 - **Input Size**: 12 features (OHLCV + 7 technical indicators)
 - **Hidden Size**: 250 (from Optuna HPO)
 - **Layers**: 3 LSTM layers
@@ -110,6 +111,7 @@ historical = service.get_historical_predictions("AAPL", test_days=30)
 - **Output**: Single value (next-day log return)
 
 ### Training
+
 - **Optimizer**: AdamW
 - **Learning Rate**: 1.09e-5
 - **Batch Size**: 16
@@ -118,6 +120,7 @@ historical = service.get_historical_predictions("AAPL", test_days=30)
 - **Loss**: MSE
 
 ### Data
+
 - **Source**: Yahoo Finance (yfinance)
 - **Period**: 2015-01-01 to present
 - **Split**: 70% train / 15% val / 15% test (chronological)
@@ -126,7 +129,7 @@ historical = service.get_historical_predictions("AAPL", test_days=30)
 ## Evaluation Metrics
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | MSE | Mean Squared Error |
 | MAE | Mean Absolute Error |
 | R² | Coefficient of Determination |

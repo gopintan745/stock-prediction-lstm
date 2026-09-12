@@ -64,6 +64,7 @@ historical = service.get_historical_predictions("AAPL", test_days=30)
 ## Model Artifacts Required
 
 The following files must exist in the project root (or specify `artifacts_dir`):
+
 - `model_<TICKER>.pt` - Trained model weights
 - `scalers_<TICKER>.pkl` - Fitted StandardScaler objects
 - `config_<TICKER>.json` - Training configuration
@@ -71,6 +72,7 @@ The following files must exist in the project root (or specify `artifacts_dir`):
 ## Features Used
 
 The model uses 12 technical indicators as input features:
+
 1. Open, High, Low, Close, Volume
 2. SMA_10 (10-day Simple Moving Average)
 3. SMA_30 (30-day Simple Moving Average)
