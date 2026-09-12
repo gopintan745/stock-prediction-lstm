@@ -84,12 +84,12 @@ def final_training(ticker="AAPL", num_epochs=100, device='cpu', storage_path='op
     # Is the model's directional accuracy actually distinguishable from
     # random guessing (p=0.5), given how many test samples we have?
     n_test = len(targets_t)
-    n_correct = round(model_metrics["DirectionalAccuracy"] * n_test)
+    n_correct = round(model_metrics["Directional Accuracy"] * n_test)
     try:
         from scipy.stats import binomtest
         p_value = binomtest(n_correct, n_test, p=0.5, alternative="greater").pvalue
         print(f"\nDirectional accuracy vs. random guessing (p=0.5):")
-        print(f"  {n_correct}/{n_test} correct ({model_metrics['DirectionalAccuracy']*100:.2f}%), "
+        print(f"  {n_correct}/{n_test} correct ({model_metrics['Directional Accuracy']*100:.2f}%), "
               f"one-sided binomial test p-value = {p_value:.4f}")
         if p_value >= 0.05:
             print("  --> NOT statistically distinguishable from random guessing at alpha=0.05.")
