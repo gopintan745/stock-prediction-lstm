@@ -44,7 +44,7 @@ def test_prediction_service(model, scaler_x, scaler_y, config):
 
 def test_data_fetching(service):
     print("\nTesting data fetching...")
-    df = service.fetch_recent_data('AAPL', days=30)
+    df = service.fetch_recent_data('AAPL', days=200)
     assert len(df) > 0
     print(f"  ✓ Fetched {len(df)} rows of raw data")
     

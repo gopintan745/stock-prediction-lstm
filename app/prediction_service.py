@@ -53,7 +53,8 @@ class PredictionService:
             start=start_date.strftime("%Y-%m-%d"),
             end=end_date.strftime("%Y-%m-%d"),
             auto_adjust=True,
-            progress=False
+            progress=False,
+            repair=True
         )
         
         if df.empty:
