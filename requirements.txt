@@ -13,3 +13,7 @@ torchmetrics>=1.2.0
 
 # Utilities
 tqdm>=4.66.0
+
+# Web application
+streamlit>=1.28.0
+plotly>=5.17.0
