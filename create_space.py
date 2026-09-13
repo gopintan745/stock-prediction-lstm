@@ -76,7 +76,7 @@ def main():
             private=False, 
             exist_ok=True,
             repo_type="space",
-            space_sdk="static",
+            space_sdk="gradio",
         )
         print(f"Space {SPACE_ID} created/verified")
     except Exception as e:

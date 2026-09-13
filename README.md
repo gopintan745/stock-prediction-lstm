@@ -3,16 +3,16 @@ title: Stock Prediction LSTM
 emoji: 📈
 colorFrom: blue
 colorTo: green
-sdk: streamlit
-sdk_version: "1.28.0"
-app_file: app/streamlit_app.py
+sdk: gradio
+sdk_version: "4.0.0"
+app_file: app/gradio_app.py
 pinned: false
 license: mit
 ---
 
 # Stock Prediction LSTM
 
-A PyTorch-based LSTM model for predicting next-day stock log returns using technical indicators. Deployed as a Hugging Face Space with Streamlit.
+A PyTorch-based LSTM model for predicting next-day stock log returns using technical indicators. Deployed as a Hugging Face Space with Gradio.
 
 ## Model
 
@@ -24,7 +24,7 @@ The model is a 3-layer LSTM with 250 hidden units, trained on AAPL stock data fr
 
 - Next-day log return prediction
 - Technical indicators: SMA, EMA, RSI, MACD
-- Interactive Streamlit UI
+- Interactive Gradio UI
 - Backtesting visualization
 - Directional accuracy metrics
 
