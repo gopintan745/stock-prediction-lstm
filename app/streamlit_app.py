@@ -27,15 +27,30 @@ st.set_page_config(
 
 
 @st.cache_resource
-def load_model_and_artifacts(ticker: str):
+def load_model_and_artifacts(ticker: str, use_hf_hub: bool = False, hf_repo_id: str = "RousingSea7309/stock-prediction-lstm"):
     """Load model and artifacts (cached for performance)."""
-    return load_artifacts(ticker)
+    return load_artifacts(ticker, use_hf_hub=use_hf_hub, hf_repo_id=hf_repo_id)
 
 
 def main():
     # Sidebar
     st.sidebar.title("📈 Stock Prediction LSTM")
     st.sidebar.markdown("---")
+    
+    # Model source selection
+    use_hf_hub = st.sidebar.checkbox(
+        "Load from Hugging Face Hub", 
+        value=False,
+        help="Load model artifacts from Hugging Face Hub instead of local files"
+    )
+    
+    hf_repo_id = "RousingSea7309/stock-prediction-lstm"
+    if use_hf_hub:
+        hf_repo_id = st.sidebar.text_input(
+            "HF Repository ID", 
+            value="RousingSea7309/stock-prediction-lstm",
+            help="Hugging Face repository ID (e.g., username/model-name)"
+        )
     
     # Ticker selection
     ticker = st.sidebar.text_input("Stock Ticker", value="AAPL", help="Enter a valid stock ticker (e.g., AAPL, GOOGL, MSFT)").upper()
@@ -46,7 +61,7 @@ def main():
     # Load model
     try:
         with st.spinner(f"Loading model for {ticker}..."):
-            model, scaler_x, scaler_y, config = load_model_and_artifacts(ticker)
+            model, scaler_x, scaler_y, config = load_model_and_artifacts(ticker, use_hf_hub, hf_repo_id)
             prediction_service = create_prediction_service(
                 model, scaler_x, scaler_y,
                 window=config.get("window", 30),
