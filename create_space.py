@@ -52,6 +52,19 @@ SPACE_FILES = [
     ".gitignore",
 ]
 
+# Files/folders to ignore
+IGNORE_PATTERNS = [
+    "*.pt", "*.pkl", "*.db", "*.json",  # Don't upload model artifacts to space
+    "__pycache__", "*.pyc", ".pyc",
+    ".venv", "venv", "env",
+    ".git", ".gitignore",
+    "upload_to_hf.py", "create_space.py", "hf_model_readme.md",
+    "debug_*.py", "test_*.py",
+    "training/", "utils/", "config_*.json", "scalers_*.pkl", "model_*.pt",
+    "optuna_study*",
+    ".env",
+]
+
 def main():
     api = HfApi(token=HF_TOKEN)
     
@@ -63,7 +76,7 @@ def main():
             private=False, 
             exist_ok=True,
             repo_type="space",
-            space_sdk="docker",
+            space_sdk="static",
         )
         print(f"Space {SPACE_ID} created/verified")
     except Exception as e:
@@ -78,16 +91,7 @@ def main():
             repo_id=SPACE_ID,
             token=HF_TOKEN,
             repo_type="space",
-            ignore_patterns=[
-                "*.pt", "*.pkl", "*.db", "*.json",  # Don't upload model artifacts to space
-                "__pycache__", "*.pyc", ".pyc",
-                ".venv", "venv", "env",
-                ".git", ".gitignore",
-                "upload_to_hf.py", "create_space.py", "hf_model_readme.md",
-                "debug_*.py", "test_*.py",
-                "training/", "utils/", "config_*.json", "scalers_*.pkl", "model_*.pt",
-                "optuna_study*",
-            ],
+            ignore_patterns=IGNORE_PATTERNS,
         )
         print(f"✅ Space files uploaded to https://huggingface.co/spaces/{SPACE_ID}")
     except Exception as e:
