@@ -51,6 +51,79 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
+## Training the Model
+
+The training process has two stages: **Hyperparameter Optimization (HPO)** and **Final Training**.
+
+### 1. Hyperparameter Optimization (Optuna)
+
+Run Optuna to find the best hyperparameters:
+
+```bash
+# Run HPO with default settings (50 trials, CPU)
+python -m training.hpo
+
+# Run with more trials and GPU
+python -m training.hpo --n_trials 100 --device cuda --num_epochs 50
+```
+
+**Arguments:**
+
+- `--n_trials`: Number of Optuna trials (default: 50)
+- `--device`: Training device - `cpu` or `cuda` (default: cpu)
+- `--num_epochs`: Epochs per trial (default: 50)
+- `--alpha`: EMA smoothing factor for early stopping (default: 0.1)
+
+The HPO searches over:
+
+- `hidden_size`: 32–256
+- `num_layers`: 1–3
+- `dropout`: 0.0–0.5
+- `learning_rate`: 1e-5–1e-2 (log scale)
+- `window`: [30, 40]
+- `batch_size`: [16, 32, 64]
+- `optimizer`: [adam, adamw]
+
+Results are stored in `optuna_study.db` (SQLite).
+
+### 2. Final Training
+
+Train the final model using the best hyperparameters from HPO:
+
+```bash
+# Final training with best HPO params (100 epochs, CPU)
+python -m training.final_training
+
+# With GPU and custom epochs
+python -m training.final_training --device cuda --epochs 150
+```
+
+**Arguments:**
+
+- `--ticker`: Stock ticker (default: AAPL)
+- `--epochs`: Number of epochs (default: 100)
+- `--device`: `cpu` or `cuda` (default: cpu)
+- `--storage_path`: Path to Optuna study DB (default: optuna_study.db)
+
+This saves three artifacts:
+
+- `model_<TICKER>.pt` — Model weights
+- `scalers_<TICKER>.pkl` — Fitted StandardScalers for features and target
+- `config_<TICKER>.json` — Training configuration
+
+### Complete Training Pipeline
+
+```bash
+# 1. Run hyperparameter optimization
+python -m training.hpo --n_trials 50 --device cuda
+
+# 2. Train final model with best params
+python -m training.final_training --device cuda --epochs 100
+
+# 3. Verify with backtest
+python -m app.cli backtest --ticker AAPL --days 30
+```
+
 ## Usage
 
 ### Web Application (Streamlit)
