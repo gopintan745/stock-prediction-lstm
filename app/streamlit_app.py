@@ -12,8 +12,8 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 import torch
 
-from app.model_loader import load_artifacts, get_default_config
-from app.prediction_service import create_prediction_service
+from model_loader import load_artifacts, get_default_config
+from prediction_service import create_prediction_service
 from data.pipeline import FEATURE_COLUMNS
 
 
